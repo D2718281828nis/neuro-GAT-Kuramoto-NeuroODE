@@ -1,0 +1,7 @@
+experiment: "STEW subject-independent full evaluation"
+seed: 7
+device: auto
+data: {data_root: dataset, sfreq: 128, window_seconds: 4, overlap: 0.5, bands: [delta, theta, alpha, beta, gamma]}
+model: {hidden: 64, t1: 1.0, step_size: 0.1, solver: rk4, dynamic_attention: true, tasks: [graph, node, link]}
+training: {epochs: 100, folds: 5, grouped_subject_split: true, early_stopping_patience: 12, gradient_clip: 1.0, mixed_precision: true, checkpoint_dir: outputs/checkpoints}
+outputs: {predictions: true, metrics: true, plots_png: true, plots_svg: true}

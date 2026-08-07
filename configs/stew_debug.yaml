@@ -1,0 +1,6 @@
+experiment: "SMOKE TEST - not a scientific result"
+seed: 7
+device: cpu
+data: {data_root: dataset, sfreq: 128, window_seconds: 4, overlap: 0.5, max_subjects: 3, max_windows: 4}
+model: {hidden: 12, t1: 0.2, step_size: 0.1, solver: rk4, tasks: [graph, node, link]}
+training: {epochs: 2, grouped_subject_split: true, gradient_clip: 1.0}

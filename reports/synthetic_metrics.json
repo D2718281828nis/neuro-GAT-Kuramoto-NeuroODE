@@ -1,0 +1,53 @@
+{
+  "report_type": "deterministic synthetic smoke fixture",
+  "stew_result": false,
+  "graph_prediction": {
+    "samples": 12,
+    "threshold": 0.5,
+    "roc_auc": 0.9166666666666666,
+    "accuracy": 0.8333333333333334,
+    "confusion_matrix": [
+      [
+        5,
+        1
+      ],
+      [
+        1,
+        5
+      ]
+    ],
+    "confusion_matrix_axes": {
+      "rows": "true [0, 1]",
+      "columns": "predicted [0, 1]"
+    }
+  },
+  "node_prediction": {
+    "values": 10,
+    "mae": 0.10799999999999998,
+    "rmse": 0.11081516141756052,
+    "r2": 0.9842083266355891,
+    "roc_auc": null,
+    "confusion_matrix": null,
+    "classification_metrics_note": "Not applicable to continuous masked-feature reconstruction."
+  },
+  "link_prediction": {
+    "samples": 16,
+    "threshold": 0.5,
+    "roc_auc": 0.96875,
+    "accuracy": 0.8125,
+    "confusion_matrix": [
+      [
+        6,
+        2
+      ],
+      [
+        1,
+        7
+      ]
+    ],
+    "confusion_matrix_axes": {
+      "rows": "true [0, 1]",
+      "columns": "predicted [0, 1]"
+    }
+  }
+}

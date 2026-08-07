@@ -92,6 +92,8 @@ python -m examples.vanilla_06_synthetic_multitask
 pytest -q
 python -m hmb_kuramoto_ode.cli train --config configs/stew_debug.yaml data.data_root='/path/to/STEW'
 python -m hmb_kuramoto_ode.cli cross-validate --config configs/stew_full.yaml data.data_root='/path/to/STEW'
+python -m examples.stew_real_experiment --data-root '/path/to/STEW' --model gat --epochs 20
+python -m examples.stew_real_experiment --data-root '/path/to/STEW' --model full --epochs 20
 ```
 
 The full configuration specifies grouped cross-validation, checkpoints, fold predictions, metrics, PNG/SVG plots, early stopping, and mixed precision on CUDA. RK4 has no optional dependency; `torchdiffeq` is optional. Outputs must stay under `outputs/` and should include loss/dynamics curves, ROC/PR, confusion matrices, attention, gates, synchronization, and predicted connectivity. Baseline names and ablation switches cover MLP, GCN, GAT, GRAND, Kuramoto variants and the full model; compute-intensive real-data results are deliberately not claimed here.
@@ -99,6 +101,8 @@ The full configuration specifies grouped cross-validation, checkpoints, fold pre
 ### Architecture report
 
 The committed [`reports/`](reports/README.md) directory contains a reproducible architecture overview and a [three-task synthetic smoke-metrics report](reports/synthetic_metrics.md). The latter separately reports node regression, link prediction, and graph prediction; it includes ROC-AUC and confusion matrices where they are defined and clearly distinguishes fixed-fixture smoke measurements from STEW results.
+
+The [real STEW experiment status](reports/real_stew_status.md) documents the subject-disjoint GAT/full-model runner and its output files. Real metrics are written only after loading actual STEW recordings; a network or dataset failure is never replaced with synthetic measurements.
 
 ### Reproducibility, limitations, and extension
 

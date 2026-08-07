@@ -54,3 +54,7 @@ The text-based `architecture_overview.svg` preview is committed because this rev
 ## Связь с архитектурой
 
 Верхняя строка показывает путь от окна EEG через признаки, кодировщик, непрерывную динамику и pooling к трём задачам. В нижней части каждый столбец соответствует электроду, пять цветов — ритмам delta/theta/alpha/beta/gamma, серые вертикальные линии — локальным межчастотным связям, а цветные горизонтальные — пространственным связям одного диапазона. Светло-фиолетовые узлы обозначают представления электродов, тёмно-фиолетовый — представление всего графа. Это схема архитектуры, а не график качества или клинический результат.
+
+## Real STEW experiment
+
+See [real STEW execution status and commands](real_stew_status.md). The real runner keeps train, validation, and test subjects disjoint and produces separate GAT/full-model reports; no metric is claimed unless actual dataset files were loaded.

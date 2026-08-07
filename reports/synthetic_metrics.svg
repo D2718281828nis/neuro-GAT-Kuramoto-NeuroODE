@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="520" viewBox="0 0 1000 520" role="img" aria-labelledby="title desc">
+<title id="title">Synthetic three-task smoke metrics</title>
+<desc id="desc">Graph and link confusion matrices plus node regression metrics. These are deterministic fixture results, not STEW results.</desc>
+<style>.title{font:700 20px sans-serif;fill:#172033;text-anchor:middle}.small{font:14px sans-serif;fill:#475569;text-anchor:middle}.value{font:700 26px sans-serif;fill:white;text-anchor:middle}.metric{font:600 18px sans-serif;fill:#172033}</style>
+<rect width="1000" height="520" fill="#f8fafc"/>
+<text x="500" y="35" class="title">Synthetic smoke evaluation — not a STEW benchmark</text>
+<text x="192" y="93" class="title">Graph prediction — ROC-AUC 0.917</text><text x="192" y="117" class="small">columns: predicted 0 / 1</text><rect x="90" y="135" width="100" height="80" fill="#2563eb" fill-opacity="0.950" stroke="#1e293b"/><text x="140" y="183" class="value">5</text><rect x="195" y="135" width="100" height="80" fill="#2563eb" fill-opacity="0.350" stroke="#1e293b"/><text x="245" y="183" class="value">1</text><rect x="90" y="220" width="100" height="80" fill="#2563eb" fill-opacity="0.350" stroke="#1e293b"/><text x="140" y="268" class="value">1</text><rect x="195" y="220" width="100" height="80" fill="#2563eb" fill-opacity="0.950" stroke="#1e293b"/><text x="245" y="268" class="value">5</text><text x="75" y="217" class="small" transform="rotate(-90 75 217)">rows: true 0 / 1</text>
+<text x="502" y="93" class="title">Link prediction — ROC-AUC 0.969</text><text x="502" y="117" class="small">columns: predicted 0 / 1</text><rect x="400" y="135" width="100" height="80" fill="#2563eb" fill-opacity="0.843" stroke="#1e293b"/><text x="450" y="183" class="value">6</text><rect x="505" y="135" width="100" height="80" fill="#2563eb" fill-opacity="0.414" stroke="#1e293b"/><text x="555" y="183" class="value">2</text><rect x="400" y="220" width="100" height="80" fill="#2563eb" fill-opacity="0.307" stroke="#1e293b"/><text x="450" y="268" class="value">1</text><rect x="505" y="220" width="100" height="80" fill="#2563eb" fill-opacity="0.950" stroke="#1e293b"/><text x="555" y="268" class="value">7</text><text x="385" y="217" class="small" transform="rotate(-90 385 217)">rows: true 0 / 1</text>
+<rect x="700" y="92" width="255" height="235" rx="8" fill="#ecfeff" stroke="#155e75" stroke-width="2"/>
+<text x="827" y="130" class="title">Node prediction</text>
+<text x="725" y="180" class="metric">MAE: 0.1080</text>
+<text x="725" y="220" class="metric">RMSE: 0.1108</text>
+<text x="725" y="260" class="metric">R²: 0.9842</text>
+<text x="827" y="300" class="small">ROC-AUC / matrix: N/A (regression)</text>
+<text x="500" y="445" class="small">Rows are true classes; columns are predicted classes; classification threshold = 0.5.</text>
+<text x="500" y="478" class="small">Fixed synthetic fixtures exercise report calculations only. No dataset or trained checkpoint was used.</text>
+</svg>

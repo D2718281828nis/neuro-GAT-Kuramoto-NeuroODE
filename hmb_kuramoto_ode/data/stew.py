@@ -27,8 +27,59 @@ class STEWDataset:
             self.records.append(STEWRecord(p, subject, condition, int(condition == "high")))
     def inspect(self) -> dict:
         return {"recordings":len(self.records), "subjects":len({r.subject_id for r in self.records}), "channels":list(DEFAULT_CHANNELS), "sampling_frequency":self.preprocessor.sfreq}
-    def load(self, record: STEWRecord) -> np.ndarray:
-        x=np.loadtxt(record.path, dtype="float32"); x=x.T if x.shape[1] == 14 else x
-        if x.shape[0] != 14: raise ValueError(f"{record.path}: expected 14 channels, got {x.shape}")
-        return x
 
+    def load(self, record: STEWRecord) -> np.ndarray:
+        """Load a STEW recording as ``[14, samples]``.
+
+        STEW mirrors in the wild use both whitespace-separated text and CSV
+        (sometimes with a header or a leading sample/time column).  Delimiter
+        detection is based on the first non-empty line; channel validation
+        remains strict so malformed metadata cannot silently become EEG data.
+        """
+        lines = record.path.read_text(encoding="utf-8-sig").splitlines()
+        first = next((line for line in lines if line.strip()), "")
+        if not first:
+            raise ValueError(f"{record.path}: recording is empty")
+        counts = {delimiter: first.count(delimiter) for delimiter in (",", ";", "\t")}
+        delimiter = max(counts, key=counts.get) if max(counts.values()) else None
+        try:
+            values = np.genfromtxt(
+                record.path,
+                delimiter=delimiter,
+                dtype=np.float32,
+                encoding="utf-8-sig",
+                invalid_raise=True,
+            )
+        except (OSError, TypeError, ValueError) as error:
+            shown = "whitespace" if delimiter is None else repr(delimiter)
+            raise ValueError(
+                f"{record.path}: could not parse numeric STEW samples using "
+                f"detected delimiter {shown}. Expected 14 numeric EEG columns, "
+                "optionally preceded by one sample/time column."
+            ) from error
+
+        values = np.atleast_2d(values)
+        # genfromtxt represents a textual header as one all-NaN row/column.
+        values = values[~np.isnan(values).all(axis=1)]
+        values = values[:, ~np.isnan(values).all(axis=0)]
+        if not values.size or not np.isfinite(values).all():
+            raise ValueError(f"{record.path}: recording contains missing or non-numeric sample values")
+
+        def index_like(column: np.ndarray) -> bool:
+            differences = np.diff(column.astype(np.float64))
+            return bool(differences.size and np.all(differences >= 0) and np.any(differences > 0))
+
+        if values.shape[1] == 15 and index_like(values[:, 0]):
+            values = values[:, 1:]
+        elif values.shape[0] == 15 and index_like(values[0]):
+            values = values[1:, :]
+
+        if values.shape[1] == 14:
+            values = values.T
+        elif values.shape[0] != 14:
+            shown = "whitespace" if delimiter is None else repr(delimiter)
+            raise ValueError(
+                f"{record.path}: expected 14 EEG channels after parsing delimiter "
+                f"{shown}, got numeric shape {values.shape}"
+            )
+        return np.ascontiguousarray(values, dtype=np.float32)

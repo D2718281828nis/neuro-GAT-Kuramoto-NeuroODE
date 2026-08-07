@@ -104,6 +104,8 @@ python examples/stew_real_experiment.py --data-root '/path/to/STEW' --model gat 
 
 If the project was not installed with `python -m pip install -e '.[dev]'`, the direct script adds the repository root to `sys.path` before importing `hmb_kuramoto_ode`. This addresses `ModuleNotFoundError: No module named 'hmb_kuramoto_ode'`; scientific dependencies still need to be installed normally.
 
+STEW text files may be whitespace-, comma-, semicolon-, or tab-delimited. The loader detects these formats, ignores a textual header, and accepts one leading monotonic sample/time column while still requiring exactly 14 EEG channels. Thus CSV rows such as `1, ...` no longer fail with `could not convert string '1,' to float32`. If parsing still fails, the raised error reports the detected delimiter and numeric shape rather than silently dropping columns.
+
 The full configuration specifies grouped cross-validation, checkpoints, fold predictions, metrics, PNG/SVG plots, early stopping, and mixed precision on CUDA. RK4 has no optional dependency; `torchdiffeq` is optional. Outputs must stay under `outputs/` and should include loss/dynamics curves, ROC/PR, confusion matrices, attention, gates, synchronization, and predicted connectivity. Baseline names and ablation switches cover MLP, GCN, GAT, GRAND, Kuramoto variants and the full model; compute-intensive real-data results are deliberately not claimed here.
 
 ### Architecture report

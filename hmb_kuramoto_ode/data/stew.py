@@ -6,12 +6,38 @@ import numpy as np
 from .preprocessing import RhythmPreprocessor
 from ..contracts import DEFAULT_CHANNELS
 
+
+def condition_from_path(path: Path) -> str | None:
+    """Return the explicit STEW condition encoded in a recording filename.
+
+    Metadata tables such as ``ratings.txt`` intentionally return ``None`` and
+    are not EEG recordings.  Separators and compact suffixes (``sub01_hi`` and
+    ``sub01hi``) are both supported.
+    """
+    stem = path.stem.lower()
+    match = re.search(r"(?:^|[_\-\s])(high|hi|low|lo)(?:$|[_\-\s])", stem)
+    marker = match.group(1) if match else next(
+        (suffix for suffix in ("high", "low", "hi", "lo") if stem.endswith(suffix)),
+        None,
+    )
+    if marker is None:
+        return None
+    return "high" if marker in {"high", "hi"} else "low"
+
+
 def discover_stew(data_root: str | Path) -> list[Path]:
     root = Path(data_root).expanduser()
     if not root.is_dir():
         raise FileNotFoundError(f"STEW data root not found: {root}. Expected <root>/*.txt recordings such as sub01_hi.txt and sub01_lo.txt (14 EEG columns). Set data.data_root or --data-root; synthetic data is not substituted.")
-    files = sorted(p for p in root.rglob("*.txt") if not p.name.startswith("."))
-    if not files: raise FileNotFoundError(f"No STEW .txt recordings below {root}; expected subject/condition text files with 14 EEG columns.")
+    text_files = sorted(p for p in root.rglob("*.txt") if not p.name.startswith("."))
+    files = [path for path in text_files if condition_from_path(path) is not None]
+    if not files:
+        ignored = ", ".join(path.name for path in text_files[:5]) or "none"
+        raise FileNotFoundError(
+            f"No STEW high/low EEG recordings below {root}. Expected names such "
+            f"as sub01_hi.txt and sub01_lo.txt; ignored metadata/unrecognized "
+            f"text files: {ignored}."
+        )
     return files
 
 @dataclass
@@ -23,7 +49,8 @@ class STEWDataset:
         self.preprocessor = preprocessor or RhythmPreprocessor(); self.records=[]
         for p in discover_stew(data_root):
             stem=p.stem.lower(); m=re.search(r"(\d+)", stem); subject=m.group(1) if m else p.stem
-            condition="high" if any(k in stem for k in ("hi", "high")) else "low"
+            condition=condition_from_path(p)
+            assert condition is not None  # discover_stew already enforces this contract.
             self.records.append(STEWRecord(p, subject, condition, int(condition == "high")))
     def inspect(self) -> dict:
         return {"recordings":len(self.records), "subjects":len({r.subject_id for r in self.records}), "channels":list(DEFAULT_CHANNELS), "sampling_frequency":self.preprocessor.sfreq}

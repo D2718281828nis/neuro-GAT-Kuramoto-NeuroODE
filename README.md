@@ -106,6 +106,8 @@ If the project was not installed with `python -m pip install -e '.[dev]'`, the d
 
 STEW text files may be whitespace-, comma-, semicolon-, or tab-delimited. The loader detects these formats, ignores a textual header, and accepts one leading monotonic sample/time column while still requiring exactly 14 EEG channels. Thus CSV rows such as `1, ...` no longer fail with `could not convert string '1,' to float32`. If parsing still fails, the raised error reports the detected delimiter and numeric shape rather than silently dropping columns.
 
+Only files with an explicit high/low condition marker in their name (for example, `sub01_hi.txt` and `sub01_lo.txt`) are treated as EEG recordings. Tables such as `ratings.txt`, `labels.txt`, or other text metadata are ignored rather than passed to the 14-channel loader. If no condition-named recordings are found, the discovery error lists the ignored files to help diagnose the dataset layout.
+
 The full configuration specifies grouped cross-validation, checkpoints, fold predictions, metrics, PNG/SVG plots, early stopping, and mixed precision on CUDA. RK4 has no optional dependency; `torchdiffeq` is optional. Outputs must stay under `outputs/` and should include loss/dynamics curves, ROC/PR, confusion matrices, attention, gates, synchronization, and predicted connectivity. Baseline names and ablation switches cover MLP, GCN, GAT, GRAND, Kuramoto variants and the full model; compute-intensive real-data results are deliberately not claimed here.
 
 ### Architecture report

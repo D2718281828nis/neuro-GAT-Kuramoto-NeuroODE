@@ -8,7 +8,7 @@ from hmb_kuramoto_ode.data.splits import grouped_folds,assert_disjoint
 from hmb_kuramoto_ode.models.attention import EdgeAttention
 from hmb_kuramoto_ode.models.full_model import HierarchicalKuramotoODE
 from hmb_kuramoto_ode.models.ode_solver import integrate
-from hmb_kuramoto_ode.data.stew import STEWDataset,STEWRecord
+from hmb_kuramoto_ode.data.stew import STEWDataset,STEWRecord,condition_from_path
 
 def test_stew_loader_accepts_csv_header_and_sample_index(tmp_path):
     path=tmp_path/"sub01_hi.txt"; samples=np.arange(5*14,dtype=np.float32).reshape(5,14)
@@ -24,6 +24,20 @@ def test_stew_loader_accepts_whitespace_and_rejects_bad_width(tmp_path):
     dataset=STEWDataset(tmp_path); assert dataset.load(dataset.records[0]).shape==(14,6)
     bad=tmp_path/"bad.txt"; np.savetxt(bad,np.ones((6,13)))
     with pytest.raises(ValueError,match="expected 14 EEG channels"): dataset.load(STEWRecord(bad,"bad","low",0))
+
+def test_stew_discovery_ignores_ratings_metadata(tmp_path):
+    np.savetxt(tmp_path/"ratings.txt",np.ones((45,3)),delimiter=",")
+    np.savetxt(tmp_path/"sub01_hi.txt",np.ones((6,14)),delimiter=",")
+    np.savetxt(tmp_path/"sub01_lo.txt",np.ones((6,14)),delimiter=",")
+    dataset=STEWDataset(tmp_path)
+    assert [record.path.name for record in dataset.records]==["sub01_hi.txt","sub01_lo.txt"]
+    assert [record.label for record in dataset.records]==[1,0]
+    assert condition_from_path(tmp_path/"ratings.txt") is None
+
+def test_stew_discovery_requires_condition_named_recordings(tmp_path):
+    np.savetxt(tmp_path/"ratings.txt",np.ones((45,3)),delimiter=",")
+    with pytest.raises(FileNotFoundError,match="ignored metadata.*ratings.txt"):
+        STEWDataset(tmp_path)
 
 def test_preprocessing_shape_and_train_statistics():
     raw=np.random.default_rng(1).normal(size=(14,512)); p=RhythmPreprocessor(); f=p.transform_window(raw)

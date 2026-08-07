@@ -47,6 +47,7 @@ hmb_kuramoto_ode/
 ├── analysis/                # dynamics diagnostics and figures
 └── utils/                   # deterministic, model-independent helpers
 examples/                    # small executable concepts before the full model
+examples/notebooks/          # the same concepts as standalone, plotted Colab notebooks
 configs/                     # reproducible synthetic/debug/full settings
 tests/                       # shape, gradient, stability and leakage contracts
 ```
@@ -77,6 +78,14 @@ Place the separately obtained STEW files below any configurable directory (space
 Dataset files are neither bundled nor cached in Git. Discovery is recursive and missing data produces an actionable error; real-data commands never substitute synthetic data. STEW files, channel count, and subjects are discovered rather than hard-coded (the repository started with only a license, so no prior loader was reusable). The implementation uses the commonly documented EPOC 14-channel order and configurable 128 Hz default; verify these against the metadata accompanying your copy.
 
 Splits use subjects as groups. Normalizers record and fit only training-subject statistics. Validation/test subjects remain disjoint; functional connectivity must be computed per sample or within each training fold. Negative links are canonical undirected pairs without positives, reversals, or duplicates. Early stopping and model selection belong exclusively to validation subjects.
+
+### What STEW is, and what `ratings.txt` contains
+
+STEW ("Simultaneous Task EEG Workload") is the public Lim, Sourina & Wang (2018) dataset used throughout this repository. 48 participants each completed two ~2.5-minute sessions on a 14-channel Emotiv EPOC headset at 128 Hz: a resting/low-workload baseline and the SIMKAP multitasking test, a demanding condition designed to raise cognitive load. Each session is one text file, `subNN_hi.txt` (high workload, SIMKAP) or `subNN_lo.txt` (low workload, rest), with 14 numeric EEG columns and no reliable header. The binary label used everywhere in this codebase — `STEWRecord.label` in `data/stew.py` — comes only from that `hi`/`lo` filename suffix.
+
+`ratings.txt` is separate, subject-level metadata from the original release: after each session, participants self-rated perceived mental workload on a 1–9 scale (a single-item, NASA-TLX-style rating), giving one line per subject as `subject_id, rating_lo, rating_hi`. It is *not* used to train or label anything here — `condition_from_path` and `discover_stew` in `data/stew.py` deliberately return `None` for it (and for any other file without an explicit `hi`/`lo` marker) so it can never be parsed as if it were a 14-channel recording; `tests/test_pipeline.py::test_stew_discovery_ignores_ratings_metadata` pins that behavior. It is kept only as reference data for anyone who wants to compare the model's predictions against participants' own subjective workload reports. Subjects `05`, `24`, and `42` have no line in `ratings.txt` because their self-report data was incomplete in the original release, even though their EEG recordings are present under `dataset/`.
+
+This checkout already includes a local copy of STEW: the `dataset/` directory (96 recordings, one pair per subject) and `ratings.txt` are committed to this repository's git history, even though `dataset/` is also listed in `.gitignore` — the ignore rule only stops *new*, untracked files from being added there again, it does not untrack files already committed. In other words, the commands below work immediately against `--data-root dataset` without downloading STEW separately; a checkout that starts from a history without that data still needs to supply its own copy the way the rest of this section describes.
 
 ### Installation and commands
 
@@ -110,6 +119,23 @@ Only files with an explicit high/low condition marker in their name (for example
 
 The full configuration specifies grouped cross-validation, checkpoints, fold predictions, metrics, PNG/SVG plots, early stopping, and mixed precision on CUDA. RK4 has no optional dependency; `torchdiffeq` is optional. Outputs must stay under `outputs/` and should include loss/dynamics curves, ROC/PR, confusion matrices, attention, gates, synchronization, and predicted connectivity. Baseline names and ablation switches cover MLP, GCN, GAT, GRAND, Kuramoto variants and the full model; compute-intensive real-data results are deliberately not claimed here.
 
+### Interactive Colab notebooks
+
+[`examples/notebooks/`](examples/notebooks/) has a self-contained, runnable Jupyter notebook for each concept above, meant to be opened directly in Google Colab (each has an "Open in Colab" badge) rather than read as a script. Every notebook clones just what it needs, uses the real project modules (not a reimplementation), and plots what it computes:
+
+```text
+examples/notebooks/
+├── 01_message_passing.ipynb    # spreading a signal across the hierarchical graph, no learning
+├── 02_gat_attention.ipynb      # EdgeAttention's segment softmax, trained on a toy task
+├── 03_grand_diffusion.ipynb    # GRAND-style feature diffusion and its variance decay
+├── 04_kuramoto_sync.ipynb      # order parameter, sync phase transition, unit-circle snapshots
+├── 05_neural_ode.ipynb         # Euler vs RK4 convergence order, backprop through the solver
+├── 06_synthetic_multitask.ipynb  # the full HierarchicalKuramotoODE, three heads, ablations
+└── 07_stew_real_experiment.ipynb # real STEW windows, subject-disjoint GAT vs. full training
+```
+
+Notebooks 01-06 use a sparse, blobless clone so they skip the bundled dataset entirely; 07 needs the real recordings, so it clones the full history (or accepts a Google Drive path instead, if you already have your own STEW copy). All seven were executed end-to-end while writing this README, produce their own plots, and report honestly modest STEW accuracy on the small, fast configuration they run by default — see each notebook's closing cell for how to scale up to the full protocol.
+
 ### Architecture report
 
 The committed [`reports/`](reports/README.md) directory contains a reproducible architecture overview and a [three-task synthetic smoke-metrics report](reports/synthetic_metrics.md). The latter separately reports node regression, link prediction, and graph prediction; it includes ROC-AUC and confusion matrices where they are defined and clearly distinguishes fixed-fixture smoke measurements from STEW results.
@@ -138,10 +164,22 @@ Seeds are deterministic; CPU smoke examples report measured loss/dynamics. Funct
 
 ### Данные и защита от утечки
 
-STEW необходимо получить отдельно и указать через `data_root`; данные не входят в репозиторий. Разбиение выполняется только по испытуемым. Статистики нормализации обучаются на тренировочных субъектах, валидация отделена от теста, отрицательные рёбра уникальны и не пересекаются с положительными. Случайное разделение окон одного человека запрещено и проверяется тестом.
+Разбиение выполняется только по испытуемым. Статистики нормализации обучаются на тренировочных субъектах, валидация отделена от теста, отрицательные рёбра уникальны и не пересекаются с положительными. Случайное разделение окон одного человека запрещено и проверяется тестом.
+
+### Что такое STEW и что содержит `ratings.txt`
+
+STEW ("Simultaneous Task EEG Workload") — общедоступный датасет Lim, Sourina и Wang (2018), на котором построен весь репозиторий. 48 испытуемых прошли по две сессии длительностью около 2,5 минут на 14-канальном шлеме Emotiv EPOC с частотой дискретизации 128 Гц: сессию покоя/низкой нагрузки и сессию теста SIMKAP — многозадачного упражнения, повышающего когнитивную нагрузку. Каждая сессия — отдельный текстовый файл: `subNN_hi.txt` (высокая нагрузка, SIMKAP) или `subNN_lo.txt` (низкая нагрузка, покой), с 14 числовыми столбцами ЭЭГ и без надёжного заголовка. Бинарная метка, используемая во всём коде (`STEWRecord.label` в `data/stew.py`), берётся исключительно из суффикса `hi`/`lo` в имени файла.
+
+`ratings.txt` — отдельные метаданные уровня испытуемого из оригинального релиза датасета: после каждой сессии участники сами оценивали воспринимаемую умственную нагрузку по шкале от 1 до 9 (аналог одного пункта NASA-TLX), по одной строке на испытуемого в формате `subject_id, rating_lo, rating_hi`. Этот файл **не используется** ни для обучения, ни для разметки: `condition_from_path` и `discover_stew` в `data/stew.py` намеренно возвращают `None` для него (и для любого другого файла без явного маркера `hi`/`lo`), чтобы он никогда не был разобран как 14-канальная запись; это поведение закреплено тестом `tests/test_pipeline.py::test_stew_discovery_ignores_ratings_metadata`. Файл сохранён лишь как справочные данные для тех, кто хочет сопоставить предсказания модели с субъективными самооценками нагрузки участников. У испытуемых `05`, `24` и `42` нет строк в `ratings.txt`, поскольку их самооценки в оригинальном релизе оказались неполными — хотя их ЭЭГ-записи присутствуют в `dataset/`.
+
+В этом чекауте уже есть локальная копия STEW: каталог `dataset/` (96 записей, по паре на каждого испытуемого) и `ratings.txt` закоммичены в историю репозитория, несмотря на то что `dataset/` также перечислен в `.gitignore` — правило игнорирования лишь не даёт добавлять *новые* неотслеживаемые файлы в этот каталог повторно и не снимает с учёта уже закоммиченные файлы. Иначе говоря, команды ниже сразу работают с `--data-root dataset` без отдельной загрузки STEW; при чекауте из истории без этих данных STEW нужно получить отдельно, как описано выше.
 
 ### Запуск, результаты и ограничения
 
 Команды установки, примеров, тестов и полного эксперимента приведены выше. `stew_debug.yaml` — только быстрая CPU-проверка трёх голов, а `stew_full.yaml` — воспроизводимая групповая кросс-валидация с ROC/PR, confusion matrix, предсказаниями и PNG/SVG-графиками. Без локальных STEW-файлов реальные метрики не публикуются. Для новой биомедицинской модальности нужен загрузчик с тем же контрактом, осмысленные типы рёбер и строго групповый протокол; наличие фазы нельзя выдумывать для изображений или геномики.
 
 В каталоге [`reports/`](reports/README.md) находится воспроизводимая схема архитектуры и [отчёт по трём синтетическим smoke-задачам](reports/synthetic_metrics.md): восстановлению узлов, предсказанию рёбер и классификации графа. ROC-AUC и confusion matrix приведены только для бинарных задач; отчёт явно отделяет эти фиксированные проверки от результатов STEW.
+
+### Интерактивные ноутбуки Colab
+
+В [`examples/notebooks/`](examples/notebooks/) для каждой идеи выше есть отдельный самодостаточный Jupyter-ноутбук, рассчитанный на запуск прямо в Google Colab (у каждого есть значок «Open in Colab»), а не на чтение как скрипт: 01 — распространение сигнала по иерархическому графу без обучения, 02 — обучаемый segment softmax в `EdgeAttention`, 03 — диффузия признаков в духе GRAND, 04 — синхронизация Курамото и переход через параметр порядка, 05 — сходимость Euler/RK4 и обратное распространение через решатель, 06 — полная модель `HierarchicalKuramotoODE` с тремя головами и абляциями, 07 — обучение GAT и полной модели на реальных окнах STEW с групповым разбиением по испытуемым. Ноутбуки 01–06 используют разреженное клонирование без бандла STEW; 07 клонирует полную историю (либо принимает путь к собственной копии STEW на Google Drive). Все семь были выполнены целиком при подготовке этого README и сохраняют собственные графики.

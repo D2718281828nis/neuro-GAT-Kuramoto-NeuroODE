@@ -96,6 +96,14 @@ python -m examples.stew_real_experiment --data-root '/path/to/STEW' --model gat 
 python -m examples.stew_real_experiment --data-root '/path/to/STEW' --model full --epochs 20
 ```
 
+Module execution is recommended, but direct execution is also supported from any working directory:
+
+```bash
+python examples/stew_real_experiment.py --data-root '/path/to/STEW' --model gat --epochs 20
+```
+
+If the project was not installed with `python -m pip install -e '.[dev]'`, the direct script adds the repository root to `sys.path` before importing `hmb_kuramoto_ode`. This addresses `ModuleNotFoundError: No module named 'hmb_kuramoto_ode'`; scientific dependencies still need to be installed normally.
+
 The full configuration specifies grouped cross-validation, checkpoints, fold predictions, metrics, PNG/SVG plots, early stopping, and mixed precision on CUDA. RK4 has no optional dependency; `torchdiffeq` is optional. Outputs must stay under `outputs/` and should include loss/dynamics curves, ROC/PR, confusion matrices, attention, gates, synchronization, and predicted connectivity. Baseline names and ablation switches cover MLP, GCN, GAT, GRAND, Kuramoto variants and the full model; compute-intensive real-data results are deliberately not claimed here.
 
 ### Architecture report

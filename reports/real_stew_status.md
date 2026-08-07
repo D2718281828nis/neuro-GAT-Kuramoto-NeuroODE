@@ -9,4 +9,12 @@ python -m examples.stew_real_experiment --data-root dataset --model gat --epochs
 python -m examples.stew_real_experiment --data-root dataset --model full --epochs 20
 ```
 
+Direct invocation is also supported:
+
+```bash
+python examples/stew_real_experiment.py --data-root dataset --model gat --epochs 20
+```
+
+The script inserts its repository root before importing the sibling package, so it works even when the current directory is elsewhere. Installing the project in editable mode remains recommended.
+
 Each command refuses synthetic fallback and writes `reports/real_stew/<model>_metrics.json`, `<model>_report.md`, and both PNG/SVG training-loss plus validation-accuracy plots. Dataset files remain ignored and must not be committed.

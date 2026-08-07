@@ -3,8 +3,21 @@
 This command never substitutes synthetic data. Outputs are written to reports/real_stew/.
 """
 from __future__ import annotations
-import argparse, json
+
+import argparse
+import json
 from pathlib import Path
+import sys
+
+# Support both documented module execution and direct script execution from any
+# working directory.  When invoked as ``python examples/stew_real_experiment.py``,
+# Python otherwise places only ``examples/`` on sys.path and cannot see the
+# sibling ``hmb_kuramoto_ode/`` package.
+if __package__ in (None, ""):
+    repository_root = Path(__file__).resolve().parents[1]
+    if str(repository_root) not in sys.path:
+        sys.path.insert(0, str(repository_root))
+
 import numpy as np
 import torch
 from torch import nn

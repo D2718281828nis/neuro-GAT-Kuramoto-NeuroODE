@@ -96,6 +96,10 @@ python -m hmb_kuramoto_ode.cli cross-validate --config configs/stew_full.yaml da
 
 The full configuration specifies grouped cross-validation, checkpoints, fold predictions, metrics, PNG/SVG plots, early stopping, and mixed precision on CUDA. RK4 has no optional dependency; `torchdiffeq` is optional. Outputs must stay under `outputs/` and should include loss/dynamics curves, ROC/PR, confusion matrices, attention, gates, synchronization, and predicted connectivity. Baseline names and ablation switches cover MLP, GCN, GAT, GRAND, Kuramoto variants and the full model; compute-intensive real-data results are deliberately not claimed here.
 
+### Architecture report
+
+The committed [`reports/`](reports/README.md) directory contains a reproducible PNG overview of the pipeline and hierarchical electrode/rhythm graph. The accompanying report explains every panel, color, edge, and pooling level and clearly distinguishes the schematic from measured experimental results.
+
 ### Reproducibility, limitations, and extension
 
 Seeds are deterministic; CPU smoke examples report measured loss/dynamics. Functional connectivity and workload accuracy depend on the exact STEW distribution and must be evaluated subject-independently. No superiority, image/genomics validation, or clinical usefulness is claimed. To add a biomedical modality, implement a loader yielding `[regions, bands_or_views, features]`, define typed within/between-region edges, preserve an explicit angular feature only when physically meaningful, and retain grouped split/fit contracts.
@@ -123,3 +127,5 @@ STEW необходимо получить отдельно и указать ч
 ### Запуск, результаты и ограничения
 
 Команды установки, примеров, тестов и полного эксперимента приведены выше. `stew_debug.yaml` — только быстрая CPU-проверка трёх голов, а `stew_full.yaml` — воспроизводимая групповая кросс-валидация с ROC/PR, confusion matrix, предсказаниями и PNG/SVG-графиками. Без локальных STEW-файлов реальные метрики не публикуются. Для новой биомедицинской модальности нужен загрузчик с тем же контрактом, осмысленные типы рёбер и строго групповый протокол; наличие фазы нельзя выдумывать для изображений или геномики.
+
+В каталоге [`reports/`](reports/README.md) находится воспроизводимая PNG-схема архитектуры и Markdown-описание её панелей, цветов, рёбер и уровней pooling. Схема явно отделена от экспериментальных метрик.

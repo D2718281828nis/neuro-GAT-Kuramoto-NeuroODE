@@ -5,3 +5,6 @@ outputs/
 __pycache__/
 .pytest_cache/
 *.egg-info/
+
+# Reproducible report PNGs are generated locally; commit the text SVG source instead.
+reports/*.png

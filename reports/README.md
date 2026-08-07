@@ -1,5 +1,13 @@
 # Architecture visualization report
 
+## Report index
+
+- [Architecture overview](architecture_overview.svg)
+- [Measured three-task synthetic smoke metrics](synthetic_metrics.md)
+- [Machine-readable smoke metrics](synthetic_metrics.json)
+
+The metrics report separates node reconstruction, link prediction, and graph prediction. It reports ROC-AUC and confusion matrices only for the two binary tasks; node reconstruction uses MAE, RMSE, and R² because it is a continuous task.
+
 ![Hierarchical multi-band Kuramoto-attention Neural ODE overview](architecture_overview.svg)
 
 ## What the PNG shows

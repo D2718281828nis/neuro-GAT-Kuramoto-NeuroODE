@@ -24,20 +24,55 @@ from torch import nn
 from tqdm import tqdm
 
 from hmb_kuramoto_ode.analysis.visualization import save_confusion_matrix
+from hmb_kuramoto_ode.contracts import DEFAULT_CHANNELS
 from hmb_kuramoto_ode.models.full_model import HierarchicalKuramotoODE
 from hmb_kuramoto_ode.training.metrics import classification_metrics
 from hmb_kuramoto_ode.utils.seed import seed_everything
 from tasks.common import (
+    ELECTRODE_POSITIONS,
+    band_legend_handles,
+    draw_hierarchical_topology,
     fit_and_transform,
     hierarchical_edges,
     limit_subjects,
     load_stew_windows,
     plot_loss_curve,
     plot_roc_pr,
+    save_topology_figure,
     subject_disjoint_split,
 )
 
 OUT = Path(__file__).parent / "results"
+CLASS_NAMES = ["low", "high"]
+
+
+def plot_pooling_topology(regions, rhythm_attention, region_attention, true_label, predicted_label, path):
+    """Draw the hierarchical graph for one real held-out window, sized by the
+    model's own learned pooling attention: band-node size = rhythm attention
+    within its electrode, hub-edge width = electrode's weight in the final
+    graph embedding that graph_head classifies. This is the literal pooling
+    computation in models/pooling.py::HierarchicalAttentionPooling, not a
+    schematic -- the weights come from a real forward pass.
+    """
+    import matplotlib.pyplot as plt
+
+    fig, ax = plt.subplots(figsize=(8, 8))
+    node_size = 30 + 600 * rhythm_attention.reshape(-1)
+    draw_hierarchical_topology(ax, regions, node_size=node_size)
+    ax.scatter([0], [0], s=280, color="#111827", zorder=5, marker="s")
+    ax.text(0, 0, "graph\nembedding", color="white", fontsize=6.5, ha="center", va="center",
+            zorder=6, fontweight="bold")
+    for electrode, name in enumerate(DEFAULT_CHANNELS[:regions]):
+        cx, cy = ELECTRODE_POSITIONS[name]
+        weight = float(region_attention[electrode])
+        ax.plot([cx, 0], [cy, 0], color="#f97316", linewidth=0.5 + 14 * weight, alpha=0.3 + 0.6 * weight, zorder=1)
+    handles = band_legend_handles() + [plt.Line2D([0], [0], color="#f97316", linewidth=3,
+                                                    label="region -> graph attention")]
+    ax.legend(handles=handles, loc="upper right", fontsize=7)
+    condition = {0: "low", 1: "high"}
+    save_topology_figure(fig, path,
+                          f"Pooling attention, real test window (true={condition[true_label]}, "
+                          f"predicted={condition[predicted_label]})")
 
 
 def main():
@@ -97,14 +132,22 @@ def main():
     model.eval()
     with torch.no_grad():
         set_edges(x_test.shape[0])
-        test_logits = model(x_test)["graph_logits"]
+        test_out = model(x_test)
+        test_logits = test_out["graph_logits"]
         test_prob = torch.softmax(test_logits, 1).numpy()
     metrics = classification_metrics(y_test.numpy(), test_prob)
 
     OUT.mkdir(parents=True, exist_ok=True)
     plot_loss_curve(history, OUT / "loss_curve", secondary_key="val_accuracy", secondary_label="validation accuracy")
     plot_roc_pr(y_test.numpy(), test_prob[:, 1], OUT / "roc_pr", title="Graph prediction")
-    save_confusion_matrix(metrics["confusion_matrix"], OUT / "confusion_matrix")
+    save_confusion_matrix(metrics["confusion_matrix"], OUT / "confusion_matrix", class_names=CLASS_NAMES)
+    plot_pooling_topology(
+        regions,
+        test_out["attention"]["rhythm"][0].detach().numpy(),
+        test_out["attention"]["region"][0].detach().numpy(),
+        int(y_test[0]), int(test_prob[0].argmax()),
+        OUT / "graph_topology",
+    )
 
     payload = {
         "task": "graph_prediction",
@@ -142,6 +185,7 @@ Confusion matrix (rows=true [low, high], columns=predicted [low, high]):
 ![Loss and validation accuracy](loss_curve.svg)
 ![ROC and PR curves](roc_pr.svg)
 ![Confusion matrix](confusion_matrix.svg)
+![Pooling attention on one real held-out window](graph_topology.svg)
 
 ## Reproduce
 

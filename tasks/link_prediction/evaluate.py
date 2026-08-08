@@ -24,6 +24,7 @@ if __package__ in (None, ""):
     if str(_repository_root) not in sys.path:
         sys.path.insert(0, str(_repository_root))
 
+import numpy as np
 import torch
 from torch import nn
 from tqdm import tqdm
@@ -33,6 +34,8 @@ from hmb_kuramoto_ode.models.full_model import HierarchicalKuramotoODE
 from hmb_kuramoto_ode.training.metrics import link_metrics
 from hmb_kuramoto_ode.utils.seed import seed_everything
 from tasks.common import (
+    band_legend_handles,
+    draw_hierarchical_topology,
     fit_and_transform,
     hierarchical_edges,
     limit_subjects,
@@ -40,10 +43,43 @@ from tasks.common import (
     plot_loss_curve,
     plot_roc_pr,
     sample_link_pairs,
+    save_topology_figure,
     subject_disjoint_split,
 )
 
 OUT = Path(__file__).parent / "results"
+CLASS_NAMES = ["no-edge", "edge"]
+
+
+def plot_link_topology(regions, pairs, labels, predicted, path, max_edges=50, seed=0):
+    """Draw a subsample of one real held-out window's candidate pairs, colored
+    by whether the trained LinkDecoder (models/heads.py) got them right, and
+    styled by ground truth: solid = true hierarchical edge, dashed = true
+    non-edge. This is the literal edge/non-edge decision the decoder makes
+    from z_u || z_v || |z_u - z_v| || z_u * z_v, not a schematic.
+    """
+    import matplotlib.pyplot as plt
+    import networkx as nx
+
+    fig, ax = plt.subplots(figsize=(8, 8))
+    graph, pos = draw_hierarchical_topology(ax, regions, node_size=45, alpha=0.5)
+    edges = list(zip(pairs[0].tolist(), pairs[1].tolist()))
+    correct = labels.astype(int) == predicted.astype(int)
+    index = np.arange(len(edges))
+    if len(index) > max_edges:
+        index = np.random.default_rng(seed).choice(index, size=max_edges, replace=False)
+    for i in index:
+        nx.draw_networkx_edges(graph, pos, edgelist=[edges[i]], ax=ax, width=1.4, alpha=0.85,
+                                edge_color="#16a34a" if correct[i] else "#dc2626",
+                                style="-" if labels[i] else "--")
+    handles = band_legend_handles() + [
+        plt.Line2D([0], [0], color="#16a34a", linewidth=2, label="model correct"),
+        plt.Line2D([0], [0], color="#dc2626", linewidth=2, label="model wrong"),
+        plt.Line2D([0], [0], color="black", linewidth=1.5, linestyle="-", label="true edge"),
+        plt.Line2D([0], [0], color="black", linewidth=1.5, linestyle="--", label="true non-edge"),
+    ]
+    ax.legend(handles=handles, loc="upper right", fontsize=7)
+    save_topology_figure(fig, path, f"Link predictions, real test window ({len(index)} of {len(edges)} pairs shown)")
 
 
 def main():
@@ -120,7 +156,11 @@ def main():
     OUT.mkdir(parents=True, exist_ok=True)
     plot_loss_curve(history, OUT / "loss_curve", secondary_key="val_auroc", secondary_label="validation ROC-AUC")
     plot_roc_pr(test_labels.numpy(), probability, OUT / "roc_pr", title="Link prediction")
-    save_confusion_matrix(confusion, OUT / "confusion_matrix")
+    save_confusion_matrix(confusion, OUT / "confusion_matrix", class_names=CLASS_NAMES)
+    nodes_per_graph = regions * 5
+    sample0 = (test_pairs[0] < nodes_per_graph) & (test_pairs[1] < nodes_per_graph)
+    plot_link_topology(regions, test_pairs[:, sample0].numpy(), test_labels[sample0].numpy(),
+                        prediction[sample0.numpy()], OUT / "graph_topology")
 
     metrics = {
         "edges": int(test_labels.numel()),
@@ -165,6 +205,7 @@ Confusion matrix (rows=true [no-edge, edge], columns=predicted [no-edge, edge]):
 ![Loss and validation ROC-AUC](loss_curve.svg)
 ![ROC and PR curves](roc_pr.svg)
 ![Confusion matrix](confusion_matrix.svg)
+![Link predictions on one real test window](graph_topology.svg)
 
 ## Reproduce
 

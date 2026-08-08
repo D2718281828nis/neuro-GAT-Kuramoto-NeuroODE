@@ -24,7 +24,15 @@ Each task folder has:
 loading, subject-disjoint splitting (`hmb_kuramoto_ode/data/splits.py`), tensor
 normalization (fit on training subjects only, via `TrainNormalizer`), batched
 hierarchical edges, balanced positive/negative link sampling, and the
-matplotlib plotting helpers.
+matplotlib/NetworkX plotting helpers.
+
+Every task also writes `results/graph_topology.svg`: a NetworkX drawing of the
+same 70-node (14 electrode x 5 band) hierarchical graph every task shares,
+laid out at approximate scalp positions, with a task-specific overlay drawn
+from a real forward pass on a real held-out window -- learned pooling
+attention for graph prediction, masked reconstruction targets for node
+prediction, and per-edge correct/wrong outcomes for link prediction. See each
+`TASK.md` for exactly what is encoded in its version.
 
 ## How this differs from the other reports in the repository
 

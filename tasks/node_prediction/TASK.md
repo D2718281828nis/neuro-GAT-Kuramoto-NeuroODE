@@ -51,6 +51,13 @@ latest measured MAE/RMSE/R² overall and broken down per feature, plus
 `results/loss_curve.svg`, `results/predicted_vs_true.svg` (scatter + residual
 histogram), and `results/feature_errors.svg` (MAE by feature).
 
+`results/graph_topology.svg` is a NetworkX drawing of the real hierarchical
+graph for one held-out test window, with that window's actual masked nodes
+circled in red and the graph edges that can carry reconstruction signal into
+them (their same-band spatial and local cross-frequency neighbors)
+highlighted. Everything not circled is the unmasked context `node_head`
+actually has available when it reconstructs the circled nodes.
+
 As with Task 1, the default run uses a bounded subject subset for a fast CPU
 demonstration; it is a smoke evaluation of the real model on real data, not
 the full-protocol result.

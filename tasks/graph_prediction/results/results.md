@@ -24,6 +24,7 @@ Confusion matrix (rows=true [low, high], columns=predicted [low, high]):
 ![Loss and validation accuracy](loss_curve.svg)
 ![ROC and PR curves](roc_pr.svg)
 ![Confusion matrix](confusion_matrix.svg)
+![Pooling attention on one real held-out window](graph_topology.svg)
 
 ## Reproduce
 

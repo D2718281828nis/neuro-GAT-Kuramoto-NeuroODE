@@ -29,6 +29,7 @@ MAE by feature (normalized units):
 ![Loss curve](loss_curve.svg)
 ![Predicted vs true, residuals](predicted_vs_true.svg)
 ![MAE by feature](feature_errors.svg)
+![Masked nodes on one real test window](graph_topology.svg)
 
 ## Reproduce
 

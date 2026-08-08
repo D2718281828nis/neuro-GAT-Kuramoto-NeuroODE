@@ -57,6 +57,16 @@ See [`results/results.md`](results/results.md) (and `results/results.json` for t
 raw numbers) for the latest measured run, plus `results/loss_curve.svg`,
 `results/roc_pr.svg`, and `results/confusion_matrix.svg`.
 
+`results/graph_topology.svg` is a NetworkX drawing of the actual hierarchical
+graph for one real held-out test window: the 14 electrodes are laid out in
+their approximate scalp positions, each electrode's 5 band nodes are drawn in
+a small ring around it and colored by band, and node size is that node's
+*real* `rhythm` attention weight from `HierarchicalAttentionPooling` on that
+window. Orange lines run from each electrode to a central "graph embedding"
+node, with line width equal to that electrode's `region` attention weight --
+i.e. how much it contributes to the vector `graph_head` classifies. This is
+not a schematic; the weights are read directly off a trained forward pass.
+
 The default configuration below only uses a subset of STEW subjects
 (`--max-subjects 12`) so the demonstration finishes in about a minute on a CPU;
 treat these as an honest small-scale smoke run of the real architecture and

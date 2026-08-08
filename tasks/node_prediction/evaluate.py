@@ -30,6 +30,8 @@ from hmb_kuramoto_ode.models.full_model import HierarchicalKuramotoODE
 from hmb_kuramoto_ode.utils.seed import seed_everything
 from tasks.common import (
     FEATURE_NAMES,
+    band_legend_handles,
+    draw_hierarchical_topology,
     fit_and_transform,
     hierarchical_edges,
     limit_subjects,
@@ -37,10 +39,38 @@ from tasks.common import (
     plot_feature_errors,
     plot_loss_curve,
     plot_regression,
+    save_topology_figure,
     subject_disjoint_split,
 )
 
 OUT = Path(__file__).parent / "results"
+
+
+def plot_masking_topology(regions, mask_sample, path):
+    """Highlight one real held-out window's masked nodes (reconstruction
+    targets, red rings) and the graph edges through which their neighbors'
+    information reaches them via the Kuramoto/GRAND vector field
+    (models/ode_func.py). The rest of the graph is the unmasked context the
+    model actually has to work with.
+    """
+    import matplotlib.pyplot as plt
+    import networkx as nx
+
+    fig, ax = plt.subplots(figsize=(8, 8))
+    graph, pos = draw_hierarchical_topology(ax, regions, node_size=55, alpha=0.85)
+    masked_nodes = [n for n in graph.nodes if mask_sample.reshape(-1)[n]]
+    context_edges = [(u, v) for u, v in graph.edges if u in masked_nodes or v in masked_nodes]
+    nx.draw_networkx_edges(graph, pos, edgelist=context_edges, edge_color="#dc2626", width=1.2, alpha=0.55, ax=ax)
+    nx.draw_networkx_nodes(graph, pos, nodelist=masked_nodes, node_color="none", node_size=170,
+                            edgecolors="#dc2626", linewidths=2.2, ax=ax)
+    handles = band_legend_handles() + [
+        plt.Line2D([0], [0], marker="o", color="w", markerfacecolor="none", markeredgecolor="#dc2626",
+                    markersize=10, markeredgewidth=2, label="masked node (reconstruction target)"),
+        plt.Line2D([0], [0], color="#dc2626", linewidth=2, alpha=0.55, label="edges carrying reconstruction signal"),
+    ]
+    ax.legend(handles=handles, loc="upper right", fontsize=7)
+    save_topology_figure(fig, path, f"Masked-node reconstruction, real test window "
+                                     f"({len(masked_nodes)} of {mask_sample.size} nodes masked)")
 
 
 def node_mask(batch_size: int, regions: int, bands: int, fraction: float, seed: int) -> torch.Tensor:
@@ -140,6 +170,7 @@ def main():
     plot_loss_curve(history, OUT / "loss_curve")
     plot_regression(true_masked.reshape(-1), pred_masked.reshape(-1), OUT / "predicted_vs_true")
     plot_feature_errors(mae_per_feature, OUT / "feature_errors")
+    plot_masking_topology(regions, test_mask[0].numpy(), OUT / "graph_topology")
 
     metrics = {
         "masked_values": int(true_masked.size),
@@ -194,6 +225,7 @@ MAE by feature (normalized units):
 ![Loss curve](loss_curve.svg)
 ![Predicted vs true, residuals](predicted_vs_true.svg)
 ![MAE by feature](feature_errors.svg)
+![Masked nodes on one real test window](graph_topology.svg)
 
 ## Reproduce
 

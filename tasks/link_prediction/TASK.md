@@ -58,6 +58,13 @@ latest measured ROC-AUC, average precision, and accuracy, plus
 `results/loss_curve.svg`, `results/roc_pr.svg`, and
 `results/confusion_matrix.svg`.
 
+`results/graph_topology.svg` is a NetworkX drawing of a subsample of one held-out
+test window's candidate pairs directly on the real hierarchical graph: solid
+lines are true edges, dashed lines are true non-edges, and color is whether
+`LinkDecoder` got that specific pair right (green) or wrong (red) on that
+window. It is the literal per-edge outcome of the trained decoder, not a
+schematic of the topology alone.
+
 As with Tasks 1–2, the default run uses a bounded subject subset for a fast
 CPU demonstration; it is a smoke evaluation of the real model on real data,
 not the full-protocol result.

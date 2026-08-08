@@ -20,12 +20,31 @@ import numpy as np
 import torch
 from sklearn.metrics import precision_recall_curve, roc_curve
 
-from hmb_kuramoto_ode.data.graph_builder import batch_edges, build_hierarchical_graph
+from hmb_kuramoto_ode.contracts import BANDS, DEFAULT_CHANNELS
+from hmb_kuramoto_ode.data.graph_builder import (
+    CROSS_FREQUENCY_LOCAL,
+    SPATIAL_SAME_BAND,
+    batch_edges,
+    build_hierarchical_graph,
+)
 from hmb_kuramoto_ode.data.preprocessing import RhythmPreprocessor, TrainNormalizer
 from hmb_kuramoto_ode.data.splits import assert_disjoint
 from hmb_kuramoto_ode.data.stew import STEWDataset
 
 FEATURE_NAMES = ("log_power", "relative_power", "amplitude", "phase_sin", "phase_cos", "spectral_entropy")
+
+# Approximate top-down 10-20-style layout for the 14 Emotiv EPOC channels in
+# contracts.DEFAULT_CHANNELS order, used only for a readable schematic -- not
+# a claim of anatomically precise electrode coordinates.
+ELECTRODE_POSITIONS = {
+    "AF3": (-0.30, 0.90), "AF4": (0.30, 0.90),
+    "F7": (-0.80, 0.55), "F3": (-0.35, 0.55), "F4": (0.35, 0.55), "F8": (0.80, 0.55),
+    "FC5": (-0.65, 0.20), "FC6": (0.65, 0.20),
+    "T7": (-1.00, -0.15), "T8": (1.00, -0.15),
+    "P7": (-0.80, -0.55), "P8": (0.80, -0.55),
+    "O1": (-0.30, -0.90), "O2": (0.30, -0.90),
+}
+BAND_COLORS = {"delta": "#7c3aed", "theta": "#2563eb", "alpha": "#0891b2", "beta": "#059669", "gamma": "#d97706"}
 
 
 def load_stew_windows(data_root: str, windows_per_record: int = 3, sfreq: float = 128.0,
@@ -207,6 +226,83 @@ def plot_feature_errors(mae_per_feature: list[float], path):
     ax.bar(FEATURE_NAMES, mae_per_feature, color="#2563eb")
     ax.set(ylabel="MAE (normalized units)", title="Masked-feature reconstruction error by feature")
     ax.tick_params(axis="x", rotation=30)
+    fig.tight_layout()
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(path.with_suffix(".png"), dpi=180)
+    fig.savefig(path.with_suffix(".svg"))
+    plt.close(fig)
+
+
+# --- NetworkX visualizations of the hierarchical electrode/rhythm graph -----
+#
+# One 70-node graph underlies every task: 14 electrodes x 5 rhythm bands,
+# connected by the same-band spatial and local cross-frequency edges from
+# data/graph_builder.py::build_hierarchical_graph. Each task highlights a
+# different part of how it uses that graph: pooling (graph_prediction),
+# masking (node_prediction), or the edge/non-edge decision itself
+# (link_prediction).
+
+def hierarchical_layout(regions: int, cluster_radius: float = 0.16) -> dict[int, tuple[float, float]]:
+    """Node position for every (electrode, band) node: band nodes sit in a small
+    ring around their electrode's approximate scalp position."""
+    positions = {}
+    for electrode, name in enumerate(DEFAULT_CHANNELS[:regions]):
+        cx, cy = ELECTRODE_POSITIONS[name]
+        for band in range(len(BANDS)):
+            angle = 2 * np.pi * band / len(BANDS)
+            node = electrode * len(BANDS) + band
+            positions[node] = (cx + cluster_radius * np.cos(angle), cy + cluster_radius * np.sin(angle))
+    return positions
+
+
+def build_networkx_graph(regions: int):
+    """The same hierarchical graph the model trains on, as an undirected
+    networkx.Graph with one entry per canonical (u < v) edge and its type."""
+    import networkx as nx
+
+    edge_index, edge_types = build_hierarchical_graph(regions)
+    graph = nx.Graph()
+    graph.add_nodes_from(range(regions * len(BANDS)))
+    for (u, v), edge_type in zip(edge_index[:, 0::2].T.tolist(), edge_types[0::2].tolist()):
+        graph.add_edge(u, v, type=edge_type)
+    return graph
+
+
+def draw_hierarchical_topology(ax, regions: int, node_size=60, alpha=1.0):
+    """Draw the base graph (band-colored nodes, typed edges, electrode labels)
+    onto an existing matplotlib Axes and return its node -> (x, y) layout so
+    callers can add task-specific highlights on top."""
+    import networkx as nx
+
+    graph = build_networkx_graph(regions)
+    pos = hierarchical_layout(regions)
+    spatial = [(u, v) for u, v, d in graph.edges(data=True) if d["type"] == SPATIAL_SAME_BAND]
+    cross_frequency = [(u, v) for u, v, d in graph.edges(data=True) if d["type"] == CROSS_FREQUENCY_LOCAL]
+    nx.draw_networkx_edges(graph, pos, edgelist=spatial, edge_color="#cbd5e1", width=0.7, ax=ax, alpha=alpha)
+    nx.draw_networkx_edges(graph, pos, edgelist=cross_frequency, edge_color="#e2e8f0", width=0.5, style=":", ax=ax, alpha=alpha)
+    node_colors = [BAND_COLORS[BANDS[node % len(BANDS)]] for node in graph.nodes]
+    nx.draw_networkx_nodes(graph, pos, node_color=node_colors, node_size=node_size, ax=ax,
+                            linewidths=0.4, edgecolors="white", alpha=alpha)
+    for electrode, name in enumerate(DEFAULT_CHANNELS[:regions]):
+        cx, cy = ELECTRODE_POSITIONS[name]
+        ax.text(cx, cy + 0.20, name, ha="center", fontsize=7.5, fontweight="bold", color="#334155")
+    return graph, pos
+
+
+def band_legend_handles():
+    import matplotlib.pyplot as plt
+
+    return [plt.Line2D([0], [0], marker="o", color="w", markerfacecolor=color, markersize=8, label=band)
+            for band, color in BAND_COLORS.items()]
+
+
+def save_topology_figure(fig, path, title: str):
+    import matplotlib.pyplot as plt
+
+    fig.gca().set(title=title)
+    fig.gca().set_aspect("equal")
+    fig.gca().axis("off")
     fig.tight_layout()
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)

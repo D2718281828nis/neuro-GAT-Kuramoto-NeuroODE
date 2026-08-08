@@ -24,6 +24,7 @@ Confusion matrix (rows=true [no-edge, edge], columns=predicted [no-edge, edge]):
 ![Loss and validation ROC-AUC](loss_curve.svg)
 ![ROC and PR curves](roc_pr.svg)
 ![Confusion matrix](confusion_matrix.svg)
+![Link predictions on one real test window](graph_topology.svg)
 
 ## Reproduce
 

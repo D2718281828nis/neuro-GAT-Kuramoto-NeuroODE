@@ -7,7 +7,7 @@ name = "hmb-kuramoto-ode"
 version = "0.1.0"
 description = "Experimental hierarchical multi-band Kuramoto-attention Neural ODE"
 requires-python = ">=3.11"
-dependencies = ["torch>=2.5,<3", "numpy>=2,<3", "scipy>=1.14,<2", "scikit-learn>=1.5,<2", "PyYAML>=6,<7", "matplotlib>=3.9,<4"]
+dependencies = ["torch>=2.5,<3", "numpy>=2,<3", "scipy>=1.14,<2", "scikit-learn>=1.5,<2", "PyYAML>=6,<7", "matplotlib>=3.9,<4", "networkx>=3.2,<4"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8,<10", "ruff>=0.9,<1"]

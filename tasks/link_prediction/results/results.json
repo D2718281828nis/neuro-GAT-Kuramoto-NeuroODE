@@ -1,0 +1,176 @@
+{
+  "task": "link_prediction",
+  "dataset": "real STEW recordings under /Users/denmacair/Documents/code_base/neuro-GAT-Kuramoto-NeuroODE/dataset",
+  "subjects": {
+    "train": [
+      "05",
+      "07",
+      "11",
+      "20",
+      "23",
+      "29",
+      "37",
+      "45"
+    ],
+    "validation": [
+      "01",
+      "38"
+    ],
+    "test": [
+      "13",
+      "21"
+    ]
+  },
+  "windows": {
+    "train": 48,
+    "validation": 12,
+    "test": 12
+  },
+  "args": {
+    "data_root": "dataset",
+    "max_subjects": 12,
+    "windows_per_record": 3,
+    "epochs": 20,
+    "hidden": 16,
+    "lr": 0.01,
+    "seed": 7
+  },
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 0.6897920370101929,
+      "val_loss": 0.6506291031837463,
+      "val_auroc": 0.7923352501817701
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.6557189226150513,
+      "val_loss": 0.6177290081977844,
+      "val_auroc": 0.833540716504726
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.6214067935943604,
+      "val_loss": 0.5838133692741394,
+      "val_auroc": 0.8509354550862582
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.5883933305740356,
+      "val_loss": 0.5484200119972229,
+      "val_auroc": 0.8623483045806069
+    },
+    {
+      "epoch": 5,
+      "train_loss": 0.5540819764137268,
+      "val_loss": 0.5131765604019165,
+      "val_auroc": 0.8709612333928218
+    },
+    {
+      "epoch": 6,
+      "train_loss": 0.5192703604698181,
+      "val_loss": 0.47997376322746277,
+      "val_auroc": 0.8779902835613722
+    },
+    {
+      "epoch": 7,
+      "train_loss": 0.48883944749832153,
+      "val_loss": 0.45062515139579773,
+      "val_auroc": 0.8839378015731376
+    },
+    {
+      "epoch": 8,
+      "train_loss": 0.4610433578491211,
+      "val_loss": 0.4255642592906952,
+      "val_auroc": 0.8895858946394342
+    },
+    {
+      "epoch": 9,
+      "train_loss": 0.4347277283668518,
+      "val_loss": 0.40441927313804626,
+      "val_auroc": 0.8954577301870579
+    },
+    {
+      "epoch": 10,
+      "train_loss": 0.41622447967529297,
+      "val_loss": 0.38602107763290405,
+      "val_auroc": 0.9017960539361491
+    },
+    {
+      "epoch": 11,
+      "train_loss": 0.39692214131355286,
+      "val_loss": 0.36886826157569885,
+      "val_auroc": 0.9089166501421111
+    },
+    {
+      "epoch": 12,
+      "train_loss": 0.3825529217720032,
+      "val_loss": 0.3517507314682007,
+      "val_auroc": 0.9167365655363872
+    },
+    {
+      "epoch": 13,
+      "train_loss": 0.3648661673069,
+      "val_loss": 0.33445319533348083,
+      "val_auroc": 0.9250036354022078
+    },
+    {
+      "epoch": 14,
+      "train_loss": 0.3492695987224579,
+      "val_loss": 0.31727081537246704,
+      "val_auroc": 0.9332677308480402
+    },
+    {
+      "epoch": 15,
+      "train_loss": 0.3352859616279602,
+      "val_loss": 0.3003418445587158,
+      "val_auroc": 0.9410683125123933
+    },
+    {
+      "epoch": 16,
+      "train_loss": 0.31895387172698975,
+      "val_loss": 0.2843519449234009,
+      "val_auroc": 0.9481723841628662
+    },
+    {
+      "epoch": 17,
+      "train_loss": 0.30420979857444763,
+      "val_loss": 0.26879340410232544,
+      "val_auroc": 0.9548020358252362
+    },
+    {
+      "epoch": 18,
+      "train_loss": 0.28740811347961426,
+      "val_loss": 0.25424787402153015,
+      "val_auroc": 0.9607472403992332
+    },
+    {
+      "epoch": 19,
+      "train_loss": 0.2721337676048279,
+      "val_loss": 0.2398272305727005,
+      "val_auroc": 0.966194394870778
+    },
+    {
+      "epoch": 20,
+      "train_loss": 0.26071619987487793,
+      "val_loss": 0.225812166929245,
+      "val_auroc": 0.9710507964835746
+    }
+  ],
+  "test_metrics": {
+    "edges": 4920,
+    "auroc": 0.9794626214554828,
+    "average_precision": 0.9801792454313957,
+    "accuracy_at_0.5": 0.9193089430894309,
+    "confusion_matrix": [
+      [
+        2246,
+        214
+      ],
+      [
+        183,
+        2277
+      ]
+    ]
+  }
+}

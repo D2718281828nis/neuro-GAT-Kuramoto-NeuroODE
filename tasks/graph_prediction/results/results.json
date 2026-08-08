@@ -1,0 +1,178 @@
+{
+  "task": "graph_prediction",
+  "dataset": "real STEW recordings under /Users/denmacair/Documents/code_base/neuro-GAT-Kuramoto-NeuroODE/dataset",
+  "subjects": {
+    "train": [
+      "05",
+      "07",
+      "11",
+      "20",
+      "23",
+      "29",
+      "37",
+      "45"
+    ],
+    "validation": [
+      "01",
+      "38"
+    ],
+    "test": [
+      "13",
+      "21"
+    ]
+  },
+  "windows": {
+    "train": 48,
+    "validation": 12,
+    "test": 12
+  },
+  "args": {
+    "data_root": "dataset",
+    "max_subjects": 12,
+    "windows_per_record": 3,
+    "epochs": 20,
+    "hidden": 16,
+    "lr": 0.01,
+    "seed": 7
+  },
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 0.7012811303138733,
+      "val_loss": 0.6961519718170166,
+      "val_accuracy": 0.25
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.6926190257072449,
+      "val_loss": 0.6924445033073425,
+      "val_accuracy": 0.3333333333333333
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.6854717135429382,
+      "val_loss": 0.6895453333854675,
+      "val_accuracy": 0.3333333333333333
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.6784153580665588,
+      "val_loss": 0.6874273419380188,
+      "val_accuracy": 0.3333333333333333
+    },
+    {
+      "epoch": 5,
+      "train_loss": 0.6684112548828125,
+      "val_loss": 0.6860039830207825,
+      "val_accuracy": 0.3333333333333333
+    },
+    {
+      "epoch": 6,
+      "train_loss": 0.6607959270477295,
+      "val_loss": 0.6857803463935852,
+      "val_accuracy": 0.3333333333333333
+    },
+    {
+      "epoch": 7,
+      "train_loss": 0.6538967490196228,
+      "val_loss": 0.6862804889678955,
+      "val_accuracy": 0.3333333333333333
+    },
+    {
+      "epoch": 8,
+      "train_loss": 0.6464733481407166,
+      "val_loss": 0.6869603991508484,
+      "val_accuracy": 0.4166666666666667
+    },
+    {
+      "epoch": 9,
+      "train_loss": 0.6338085532188416,
+      "val_loss": 0.6881163120269775,
+      "val_accuracy": 0.4166666666666667
+    },
+    {
+      "epoch": 10,
+      "train_loss": 0.6261280179023743,
+      "val_loss": 0.690072238445282,
+      "val_accuracy": 0.4166666666666667
+    },
+    {
+      "epoch": 11,
+      "train_loss": 0.6033872961997986,
+      "val_loss": 0.6938307285308838,
+      "val_accuracy": 0.5
+    },
+    {
+      "epoch": 12,
+      "train_loss": 0.590192973613739,
+      "val_loss": 0.6990532875061035,
+      "val_accuracy": 0.5
+    },
+    {
+      "epoch": 13,
+      "train_loss": 0.5813657641410828,
+      "val_loss": 0.7052382826805115,
+      "val_accuracy": 0.5
+    },
+    {
+      "epoch": 14,
+      "train_loss": 0.5632174015045166,
+      "val_loss": 0.7122116088867188,
+      "val_accuracy": 0.5
+    },
+    {
+      "epoch": 15,
+      "train_loss": 0.5428466200828552,
+      "val_loss": 0.7200860977172852,
+      "val_accuracy": 0.5
+    },
+    {
+      "epoch": 16,
+      "train_loss": 0.5313981175422668,
+      "val_loss": 0.7353053092956543,
+      "val_accuracy": 0.5
+    },
+    {
+      "epoch": 17,
+      "train_loss": 0.5211735963821411,
+      "val_loss": 0.7552895545959473,
+      "val_accuracy": 0.5
+    },
+    {
+      "epoch": 18,
+      "train_loss": 0.48906731605529785,
+      "val_loss": 0.7791857123374939,
+      "val_accuracy": 0.5
+    },
+    {
+      "epoch": 19,
+      "train_loss": 0.47287997603416443,
+      "val_loss": 0.805112361907959,
+      "val_accuracy": 0.5
+    },
+    {
+      "epoch": 20,
+      "train_loss": 0.4626782238483429,
+      "val_loss": 0.8199294209480286,
+      "val_accuracy": 0.5
+    }
+  ],
+  "test_metrics": {
+    "accuracy": 0.5833333333333334,
+    "balanced_accuracy": 0.5833333333333334,
+    "macro_f1": 0.5555555555555556,
+    "confusion_matrix": [
+      [
+        5,
+        1
+      ],
+      [
+        4,
+        2
+      ]
+    ],
+    "auroc": 0.5277777777777778,
+    "auprc": 0.647979797979798,
+    "ece": 0.5027199983596802
+  }
+}
